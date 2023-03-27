@@ -12,11 +12,7 @@ def _read(fname: str) -> str:
     return data
 
 
-base_packages: List[str] = [
-    "pettingzoo",
-    "pygame",
-    "matplotlib",
-]
+base_packages: List[str] = ["pettingzoo", "pygame", "matplotlib", "torch"]
 
 dev_packages = [
     "black",
