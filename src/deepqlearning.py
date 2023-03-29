@@ -56,7 +56,7 @@ class DeepQlearning(BaseQLearningModel):
                 i = 0
                 while end is False:
                     end = self.play_game(i, game, n_training_game)
-                    inputs, outputs = self.update_policy(end, i, inputs, outputs)
+                    inputs, outputs = self.update_policy(end, i, inputs, outputs, game, n_training_game)
 
                     i += 1
                 game += 1
@@ -74,7 +74,7 @@ class DeepQlearning(BaseQLearningModel):
             loss.backward()
             self.optimizer.step()
 
-    def update_policy(self, end, i, inputs, outputs):
+    def update_policy(self, end, i, inputs, outputs, game, n_training_game):
         y = self.model(torch.Tensor(self.agents[i % 2]["last_state"].flatten())).detach().numpy()
 
         if end:
@@ -98,7 +98,7 @@ class DeepQlearning(BaseQLearningModel):
                     pass
 
             # Update stats
-            self.update_stats(winner=self.agents[i % 2]["name"], nb_moves_to_win=i)
+            self.update_stats(winner=self.agents[i % 2]["name"], nb_moves_to_win=i+1, game=game, n_training_game=n_training_game)
 
         elif self.agents[(i + 1) % 2]["last_state"] is not None:
             Q_sa = torch.max(

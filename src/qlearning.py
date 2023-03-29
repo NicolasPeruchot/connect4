@@ -38,13 +38,13 @@ class Qlearning(BaseQLearningModel):
             while end is False:
                 end = self.play_game(i, game, n_training_game)
 
-                self.update_policy(end, i)
+                self.update_policy(end, i, game, n_training_game)
 
                 i += 1
 
             self.env.close()
 
-    def update_policy(self, end, i):
+    def update_policy(self, end, i, game, n_training_game):
         if end:
             if self.agents[i % 2]["reward"] == 1:
                 self.agents[(i + 1) % 2]["reward"] = -1
@@ -52,7 +52,7 @@ class Qlearning(BaseQLearningModel):
             for j in [0, 1]:
                 self.update_q_table(j)
             # Update stats
-            self.update_stats(winner=self.agents[i % 2]["name"], nb_moves_to_win=i)
+            self.update_stats(winner=self.agents[i % 2]["name"], nb_moves_to_win=i+1, game=game, n_training_game=n_training_game)
 
         elif self.agents[(i + 1) % 2]["last_state"] is not None:
             self.update_q_table((i + 1) % 2)

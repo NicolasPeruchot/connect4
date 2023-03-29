@@ -78,14 +78,18 @@ class BaseQLearningModel:
 
     def initialize_game(self, render=None):
         self.env = connect_four_v3.env(render_mode=render)
-        self.stats = {"winner": [], "nb_moves_to_win": []}
+        self.stats = {"winner": [], "nb_moves_to_win": [], "exploration factor": []}
         self.reset_agents()
         self.env.reset()
         return None
 
-    def update_stats(self, winner, nb_moves_to_win):
-        self.stats["winner"].append(winner)
+    def update_stats(self, winner, nb_moves_to_win, game, n_training_game):
+        if nb_moves_to_win != 6 * 7:
+            self.stats["winner"].append(winner)
+        else:
+            self.stats["winner"].append(None)
         self.stats["nb_moves_to_win"].append(nb_moves_to_win)
+        self.stats["exploration factor"].append(self.get_exploration_factor(game, n_training_game))
 
     def play(self):
         self.initialize_game(render="human")
@@ -108,6 +112,7 @@ class BaseQLearningModel:
         # initial stats
         winner = np.array(self.stats["winner"])
         nb_moves_to_win = np.array(self.stats["nb_moves_to_win"])
+        explo_factor = np.array(self.stats["exploration factor"])
         mobile_mean_nb_moves_to_win = np.convolve(nb_moves_to_win, np.ones(10), "valid") / 10
         N = len(winner)
 
@@ -118,7 +123,7 @@ class BaseQLearningModel:
             percentage_win_player_0[idx] = np.sum(player_0_is_winner[: idx + 1]) / (idx + 1)
 
         # plot stats
-        fig, axs = plt.subplots(3, 1, figsize=(10, 15))
+        fig, axs = plt.subplots(4, 1, figsize=(10, 20))
 
         axs[0].set_title("Winning percentage for player 0 (red)")
         axs[0].plot(range(N), percentage_win_player_0, color="red")
@@ -135,3 +140,9 @@ class BaseQLearningModel:
         axs[2].set_title("Histogram of number of moves needed to win")
         axs[2].hist(nb_moves_to_win, color="grey")
         axs[2].set_xlabel("Epoch")
+
+        axs[3].set_title("Exploration factor")
+        axs[3].plot(
+            range(len(explo_factor)), explo_factor, color="grey"
+        )
+        axs[3].set_xlabel("Epoch")
