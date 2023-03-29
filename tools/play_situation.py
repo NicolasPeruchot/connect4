@@ -1,6 +1,7 @@
 import time
 
-class PlaySituation():
+
+class PlaySituation:
     def __init__(self, model):
         self.model = model
 

@@ -28,7 +28,8 @@ class Qlearning(BaseQLearningModel):
         return key
 
     def training(self, n_training_game=1000):
-        self.initialize_game(render=None)
+        self.initialize_game(training=True)
+        self.initialize_stats()
         for game in tqdm(range(n_training_game)):
             self.env.reset()
             self.reset_agents()
@@ -52,7 +53,12 @@ class Qlearning(BaseQLearningModel):
             for j in [0, 1]:
                 self.update_q_table(j)
             # Update stats
-            self.update_stats(winner=self.agents[i % 2]["name"], nb_moves_to_win=i+1, game=game, n_training_game=n_training_game)
+            self.update_stats(
+                winner=self.agents[i % 2]["name"],
+                nb_moves_to_win=i + 1,
+                game=game,
+                n_training_game=n_training_game,
+            )
 
         elif self.agents[(i + 1) % 2]["last_state"] is not None:
             self.update_q_table((i + 1) % 2)

@@ -76,11 +76,15 @@ class BaseQLearningModel:
         }
         return None
 
-    def initialize_game(self, render=None):
+    def initialize_game(self, training=True):
+        render = None if training else "human"
         self.env = connect_four_v3.env(render_mode=render)
-        self.stats = {"winner": [], "nb_moves_to_win": [], "exploration factor": []}
         self.reset_agents()
         self.env.reset()
+        return None
+
+    def initialize_stats(self):
+        self.stats = {"winner": [], "nb_moves_to_win": [], "exploration factor": []}
         return None
 
     def update_stats(self, winner, nb_moves_to_win, game, n_training_game):
@@ -92,7 +96,7 @@ class BaseQLearningModel:
         self.stats["exploration factor"].append(self.get_exploration_factor(game, n_training_game))
 
     def play(self):
-        self.initialize_game(render="human")
+        self.initialize_game(training=False)
         self.reset_agents()
         end = False
         i = 0
@@ -142,7 +146,5 @@ class BaseQLearningModel:
         axs[2].set_xlabel("Epoch")
 
         axs[3].set_title("Exploration factor")
-        axs[3].plot(
-            range(len(explo_factor)), explo_factor, color="grey"
-        )
+        axs[3].plot(range(len(explo_factor)), explo_factor, color="grey")
         axs[3].set_xlabel("Epoch")

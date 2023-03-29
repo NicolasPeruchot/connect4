@@ -45,18 +45,21 @@ class DeepQlearning(BaseQLearningModel):
         return np.argmax(possible)
 
     def training(self, n_training_game=1000, batch_size=100):
-        self.initialize_game()
+        self.initialize_game(training=True)
+        self.initialize_stats()
         game = 0
         for epoch in tqdm(range(n_training_game // batch_size)):
             inputs = []
             outputs = []
             for _ in range(batch_size):
-                self.initialize_game(render=None)
+                self.initialize_game(training=True)
                 end = False
                 i = 0
                 while end is False:
                     end = self.play_game(i, game, n_training_game)
-                    inputs, outputs = self.update_policy(end, i, inputs, outputs, game, n_training_game)
+                    inputs, outputs = self.update_policy(
+                        end, i, inputs, outputs, game, n_training_game
+                    )
 
                     i += 1
                 game += 1
@@ -98,7 +101,12 @@ class DeepQlearning(BaseQLearningModel):
                     pass
 
             # Update stats
-            self.update_stats(winner=self.agents[i % 2]["name"], nb_moves_to_win=i+1, game=game, n_training_game=n_training_game)
+            self.update_stats(
+                winner=self.agents[i % 2]["name"],
+                nb_moves_to_win=i + 1,
+                game=game,
+                n_training_game=n_training_game,
+            )
 
         elif self.agents[(i + 1) % 2]["last_state"] is not None:
             Q_sa = torch.max(
