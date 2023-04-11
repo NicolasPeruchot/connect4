@@ -71,5 +71,4 @@ def win_diagonal(state):
 
 
 def is_direct_win(state):
-    grille = state[:, :, 0] + state[:, :, 1] * 2
-    return win_column(grille) or win_row(grille) or win_diagonal(grille)
+    return win_column(state) or win_row(state) or win_diagonal(state)
