@@ -72,3 +72,16 @@ def win_diagonal(state):
 
 def is_direct_win(state):
     return win_column(state) or win_row(state) or win_diagonal(state)
+
+
+def is_direct_defense(state, last_action):
+    grille = state[:, :, 0] + state[:, :, 1] * 2 
+
+    # find state in which other player would have been without defense
+    sub_state = state.copy()
+    for i in range(state.shape[0]):
+        if grille[i, last_action] != 0:
+            sub_state[i, last_action] = [0, 0]
+
+    # If sub_state was a direct win situation, then this was a direct defense
+    return win_column(sub_state) or win_row(sub_state) or win_diagonal(sub_state):
