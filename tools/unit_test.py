@@ -19,7 +19,7 @@ def test_row_gravity():
     grille = state[:, :, 0] + state[:, :, 1] * 2
     print(grille)
     print("In this situation, the agent shouldn't be able to win.")
-    assert(win_row(grille) == False)
+    assert(win_row(state) == False)
 
 def test_row_2_and_2():
     print("\nRow test 2 : testing 2 and 2 configuration")
@@ -34,7 +34,7 @@ def test_row_2_and_2():
     grille = state[:, :, 0] + state[:, :, 1] * 2
     print(grille)
     print("In this situation, the agent should be able to win.")
-    assert(win_row(grille) == True)
+    assert(win_row(state) == True)
 
 ### Test the column function ###
 def test_column():
@@ -50,7 +50,7 @@ def test_column():
     grille = state[:, :, 0] + state[:, :, 1] * 2
     print(grille)
     print("In this situation, the agent should be able to win.")
-    assert(win_column(grille) == True)
+    assert(win_column(state) == True)
 
 def test_full_column():
     print("\nColumn test 2 : full column configuration")
@@ -65,7 +65,7 @@ def test_full_column():
     grille = state[:, :, 0] + state[:, :, 1] * 2
     print(grille)
     print("In this situation, the agent shouldn't be able to win.")
-    assert(win_column(grille) == False)
+    assert(win_column(state) == False)
 
 ### Test the dialog function ###
 def test_right_diagonal():
@@ -82,7 +82,7 @@ def test_right_diagonal():
     print(grille)
     print("In this situation, the agent should be able to win.")
 
-    assert(win_diagonal(grille) == True)
+    assert(win_diagonal(state) == True)
 
 def test_left_diagonal():
     print("\nDiagonal test 2 : Classic left diagonal")
@@ -98,7 +98,7 @@ def test_left_diagonal():
     print(grille)
     print("In this situation, the agent should be able to win.")
 
-    assert(win_diagonal(grille) == True)
+    assert(win_diagonal(state) == True)
 
 def test_diagonal_gravity():
     print("\nDiagonal test 3 : Gravity diagonal")
@@ -114,4 +114,4 @@ def test_diagonal_gravity():
     print(grille)
     print("In this situation, the agent shouldn't be able to win.")
 
-    assert(win_diagonal(grille) == False)
+    assert(win_diagonal(state) == False)
