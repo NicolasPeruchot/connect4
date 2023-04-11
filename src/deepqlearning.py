@@ -44,7 +44,7 @@ class DeepQlearning(BaseQLearningModel):
         possible = [y[i].item() if state["action_mask"][i] != 0 else -np.inf for i in range(7)]
         return np.argmax(possible)
 
-    def training(self, n_training_game=1000, batch_size=100):
+    def training(self, n_training_game=1000, batch_size=64):
         self.initialize_game(training=True)
         self.initialize_stats()
         game = 0
