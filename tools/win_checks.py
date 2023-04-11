@@ -31,7 +31,7 @@ def win_row(grille):
 def win_column(grille):
     for j in range(grille.shape[1]):
         # S'il est possible de jouer dans dans une colonne, on vérifie si il y a victoire direct si on y joue
-        if grille[0, j] == 0 and [x for x in grille[:, j] if x != 0, :3] == [1, 1, 1]:
+        if grille[0, j] == 0 and [x for x in grille[:, j] if (x != 0)][:3] == [1, 1, 1]:
             return True
     return False
 
