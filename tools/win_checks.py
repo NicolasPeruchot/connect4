@@ -82,7 +82,7 @@ def is_direct_defense(state):
     sub_state[grille == 1] = np.array([0, 1])
     sub_state[grille == 2] = np.array([1, 0])
 
-    return win_column(state) or win_row(state) or win_diagonal(state)
+    return is_direct_win(sub_state)
 
 def was_succesfull_direct_defense(state, last_action):
     sub_state = state.copy()
@@ -94,10 +94,13 @@ def was_succesfull_direct_defense(state, last_action):
     grille[grille == 1] = 2
     grille[grille == 2] = 1
 
+    # check that player_1 cannot win now
+    could_win_now = is_direct_win(sub_state)
+
     # find state in which other player would have been without defense
     for i in range(state.shape[0]):
         if grille[i, last_action] != 0:
             sub_state[i, last_action] = np.array([0, 0])
 
-    # If sub_state was a direct win situation, then this was a direct defense
-    return win_column(sub_state) or win_row(sub_state) or win_diagonal(sub_state)
+    # If sub_state was a direct win situation and state wasn't, then this was a direct defense
+    return is_direct_win(sub_state) and not could_win_now

@@ -139,10 +139,14 @@ class BaseQLearningModel:
         percentage_win_player_0 = np.zeros(N)
         percentage_direct_win = np.zeros(N)
         percentage_direct_defense = np.zeros(N)
+        nb_direct_defense_situations_smoothed = np.zeros(N)
+        nb_succesful_direct_defense_situations_smoothed = np.zeros(N)
         for idx in range(N):
             percentage_win_player_0[idx] = np.sum(player_0_is_winner[max(0, idx - 99): idx + 1]) / min(100, idx + 1)
             percentage_direct_win[idx] =  min(100, idx + 1) / np.sum(nb_direct_win_situations[max(0, idx - 99): idx + 1])
             percentage_direct_defense[idx] =  np.sum(nb_succesful_direct_defense_situations[max(0, idx - 99): idx + 1]) / np.sum(nb_direct_defense_situations[max(0, idx - 99): idx + 1])
+            nb_direct_defense_situations_smoothed[idx] = np.sum(nb_direct_defense_situations[max(0, idx - 99): idx + 1]) / min(100, idx + 1)
+            nb_succesful_direct_defense_situations_smoothed[idx] = np.sum(nb_succesful_direct_defense_situations_smoothed[max(0, idx - 99): idx + 1]) / min(100, idx + 1)
 
         # plot stats
         fig, axs = plt.subplots(7, 1, figsize=(10, 42))
@@ -174,8 +178,8 @@ class BaseQLearningModel:
         axs[4].set_xlabel("Epoch")
 
         axs[5].set_title("Direct defense quantities")
-        axs[5].plot(range(N), nb_direct_defense_situations, color="grey", label="Faced")
-        axs[5].plot(range(N), nb_succesful_direct_defense_situations, color="blue", label="Solved")
+        axs[5].plot(range(N), nb_direct_defense_situations_smoothed, color="grey", label="Faced")
+        axs[5].plot(range(N), nb_succesful_direct_defense_situations_smoothed, color="blue", label="Solved")
         axs[5].legend()
         axs[5].set_xlabel("Epoch")
 
