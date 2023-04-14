@@ -7,6 +7,7 @@ import numpy as np
 from pettingzoo.classic import connect_four_v3
 
 
+
 class BaseQLearningModel:
     def __init__(
         self,
@@ -84,15 +85,25 @@ class BaseQLearningModel:
         return None
 
     def initialize_stats(self):
-        self.stats = {"winner": [], "nb_moves_to_win": [], "exploration factor": []}
+        self.stats = {
+            "winner": [],
+            "nb_moves_to_win": [], 
+            "nb_direct_win_situations": [],
+            "nb_direct_defense_situations": [],
+            "nb_succesful_direct_defense_situations": [],
+            "exploration factor": []
+            }
         return None
 
-    def update_stats(self, winner, nb_moves_to_win, game, n_training_game):
+    def update_stats(self, winner, nb_moves_to_win, nb_direct_win_situations, nb_direct_defense_situations, nb_succesful_direct_defense_situations, game, n_training_game):
         if nb_moves_to_win != 6 * 7:
             self.stats["winner"].append(winner)
         else:
             self.stats["winner"].append(None)
         self.stats["nb_moves_to_win"].append(nb_moves_to_win)
+        self.stats["nb_direct_win_situations"].append(nb_direct_win_situations)
+        self.stats["nb_direct_defense_situations"].append(nb_direct_defense_situations)
+        self.stats["nb_succesful_direct_defense_situations"].append(nb_succesful_direct_defense_situations)
         self.stats["exploration factor"].append(self.get_exploration_factor(game, n_training_game))
 
     def play(self):
@@ -116,6 +127,9 @@ class BaseQLearningModel:
         # initial stats
         winner = np.array(self.stats["winner"])
         nb_moves_to_win = np.array(self.stats["nb_moves_to_win"])
+        nb_direct_win_situations = np.array(self.stats["nb_direct_win_situations"])
+        nb_direct_defense_situations = np.array(self.stats["nb_direct_defense_situations"])
+        nb_succesful_direct_defense_situations = np.array(self.stats["nb_succesful_direct_defense_situations"])
         explo_factor = np.array(self.stats["exploration factor"])
         mobile_mean_nb_moves_to_win = np.convolve(nb_moves_to_win, np.ones(10), "valid") / 10
         N = len(winner)
@@ -123,11 +137,15 @@ class BaseQLearningModel:
         # compute advanced stats
         player_0_is_winner = winner == "player_0"
         percentage_win_player_0 = np.zeros(N)
+        percentage_direct_win = np.zeros(N)
+        percentage_direct_defense = np.zeros(N)
         for idx in range(N):
-            percentage_win_player_0[idx] = np.sum(player_0_is_winner[: idx + 1]) / (idx + 1)
+            percentage_win_player_0[idx] = np.sum(player_0_is_winner[max(0, idx - 99): idx + 1]) / min(100, idx + 1)
+            percentage_direct_win[idx] =  min(100, idx + 1) / np.sum(nb_direct_win_situations[max(0, idx - 99): idx + 1])
+            percentage_direct_defense[idx] =  np.sum(nb_succesful_direct_defense_situations[max(0, idx - 99): idx + 1]) / np.sum(nb_direct_defense_situations[max(0, idx - 99): idx + 1])
 
         # plot stats
-        fig, axs = plt.subplots(4, 1, figsize=(10, 20))
+        fig, axs = plt.subplots(7, 1, figsize=(10, 42))
 
         axs[0].set_title("Winning percentage for player 0 (red)")
         axs[0].plot(range(N), percentage_win_player_0, color="red")
@@ -145,6 +163,22 @@ class BaseQLearningModel:
         axs[2].hist(nb_moves_to_win, color="grey")
         axs[2].set_xlabel("Epoch")
 
-        axs[3].set_title("Exploration factor")
-        axs[3].plot(range(len(explo_factor)), explo_factor, color="grey")
+        axs[3].set_title("Direct win percentage")
+        axs[3].plot(range(N), percentage_direct_win, color="red")
+        axs[3].axhline(y=np.mean(percentage_direct_win), color="red", linestyle="--")
         axs[3].set_xlabel("Epoch")
+
+        axs[4].set_title("Direct defense percentage")
+        axs[4].plot(range(N), percentage_direct_defense, color="red")
+        axs[4].axhline(y=np.mean(percentage_direct_defense), color="red", linestyle="--")
+        axs[4].set_xlabel("Epoch")
+
+        axs[5].set_title("Direct defense quantities")
+        axs[5].plot(range(N), nb_direct_defense_situations, color="grey", label="Faced")
+        axs[5].plot(range(N), nb_succesful_direct_defense_situations, color="blue", label="Solved")
+        axs[5].legend()
+        axs[5].set_xlabel("Epoch")
+
+        axs[6].set_title("Exploration factor")
+        axs[6].plot(range(len(explo_factor)), explo_factor, color="grey")
+        axs[6].set_xlabel("Epoch")

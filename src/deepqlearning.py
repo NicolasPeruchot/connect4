@@ -5,6 +5,7 @@ from torch import nn
 from tqdm import tqdm
 
 from base_model import BaseQLearningModel
+from tools.win_checks import is_direct_win, is_direct_defense, was_succesfull_direct_defense
 
 
 class NeuralNetwork(nn.Module):
@@ -55,13 +56,31 @@ class DeepQlearning(BaseQLearningModel):
                 self.initialize_game(training=True)
                 end = False
                 i = 0
+                nb_direct_win_situations = 0
+                nb_direct_defense_situations = 0
+                nb_succesful_direct_defense_situations = 0
                 while end is False:
                     end = self.play_game(i, game, n_training_game)
-                    inputs, outputs = self.update_policy(
-                        end, i, inputs, outputs, game, n_training_game
-                    )
-
+                    if is_direct_win(self.agents[i % 2]["current_state"]):
+                        nb_direct_win_situations += 1
+                    if is_direct_defense(self.agents[i % 2]["current_state"]):
+                        nb_direct_defense_situations += 1
+                    if was_succesfull_direct_defense(self.agents[i % 2]["current_state"], self.agents[i % 2]["last_action"]):
+                        nb_succesful_direct_defense_situations += 1
+                    inputs, outputs = self.update_policy(end, i, inputs, outputs)
                     i += 1
+
+                # Update stats
+                self.update_stats(
+                    winner=self.agents[i % 2]["name"],
+                    nb_moves_to_win=i,
+                    nb_direct_win_situations=nb_direct_win_situations,
+                    nb_direct_defense_situations=nb_direct_defense_situations,
+                    nb_succesful_direct_defense_situations=nb_succesful_direct_defense_situations,
+                    game=game,
+                    n_training_game=n_training_game,
+                )
+                
                 game += 1
                 self.env.close()
 
@@ -77,7 +96,7 @@ class DeepQlearning(BaseQLearningModel):
             loss.backward()
             self.optimizer.step()
 
-    def update_policy(self, end, i, inputs, outputs, game, n_training_game):
+    def update_policy(self, end, i, inputs, outputs):
         y = self.model(torch.Tensor(self.agents[i % 2]["last_state"].flatten())).detach().numpy()
 
         if end:
@@ -99,14 +118,6 @@ class DeepQlearning(BaseQLearningModel):
 
                 except:
                     pass
-
-            # Update stats
-            self.update_stats(
-                winner=self.agents[i % 2]["name"],
-                nb_moves_to_win=i + 1,
-                game=game,
-                n_training_game=n_training_game,
-            )
 
         elif self.agents[(i + 1) % 2]["last_state"] is not None:
             Q_sa = torch.max(
