@@ -3,6 +3,7 @@ import numpy as np
 from tqdm import tqdm
 
 from base_model import BaseQLearningModel
+from tools.win_checks import is_direct_win, is_direct_defense, was_succesfull_direct_defense
 
 
 class Qlearning(BaseQLearningModel):
@@ -36,29 +37,39 @@ class Qlearning(BaseQLearningModel):
             end = False
 
             i = 0
+            nb_direct_win_situations = 0
+            nb_direct_defense_situations = 0
+            nb_succesful_direct_defense_situations = 0
             while end is False:
                 end = self.play_game(i, game, n_training_game)
-
-                self.update_policy(end, i, game, n_training_game)
-
+                if is_direct_win(self.agents[i % 2]["current_state"]):
+                    nb_direct_win_situations += 1
+                if is_direct_defense(self.agents[i % 2]["current_state"]):
+                    nb_direct_defense_situations += 1
+                if was_succesfull_direct_defense(self.agents[i % 2]["current_state"], self.agents[i % 2]["last_action"]):
+                    nb_succesful_direct_defense_situations += 1
+                self.update_policy(end, i)
                 i += 1
+            
+            self.update_stats(
+                winner=self.agents[i % 2]["name"],
+                nb_moves_to_win=i,
+                nb_direct_win_situations=nb_direct_win_situations,
+                nb_direct_defense_situations=nb_direct_defense_situations,
+                nb_succesful_direct_defense_situations=nb_succesful_direct_defense_situations,
+                game=game,
+                n_training_game=n_training_game,
+            )
 
             self.env.close()
 
-    def update_policy(self, end, i, game, n_training_game):
+    def update_policy(self, end, i):
         if end:
             if self.agents[i % 2]["reward"] == 1:
                 self.agents[(i + 1) % 2]["reward"] = -1
 
             for j in [0, 1]:
                 self.update_q_table(j)
-            # Update stats
-            self.update_stats(
-                winner=self.agents[i % 2]["name"],
-                nb_moves_to_win=i + 1,
-                game=game,
-                n_training_game=n_training_game,
-            )
 
         elif self.agents[(i + 1) % 2]["last_state"] is not None:
             self.update_q_table((i + 1) % 2)
