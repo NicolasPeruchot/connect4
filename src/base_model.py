@@ -154,6 +154,32 @@ class BaseQLearningModel:
             time.sleep(0.3)
         self.env.close()
 
+    def play_user(self, user):
+        self.initialize_game(training=False)
+        self.reset_agents()
+        end = False
+        i = 0
+        while end is False:
+            current_agent = self.agents[i % 2]["name"]
+            self.env.agent_selection = current_agent
+            state = self.env.observe(current_agent)
+            if current_agent == user:
+                print("Choose a column to play in (between 0 and 6)")
+                action = int(input())
+                try:
+                    self.env.step(action)
+                except:
+                    print("Incorrect play, try again")
+                    action = int(input())
+            else:
+                action = self.get_action(state)
+                self.env.step(action)
+            state, reward, termination, truncation, info = self.env.last()
+            end = termination or truncation
+            i += 1
+            time.sleep(0.3)
+        self.env.close()
+
     def plot_training_stats(self):
         # initial stats
         winner = np.array(self.stats["winner"])
