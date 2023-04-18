@@ -9,6 +9,10 @@ from win_checks import (
     is_direct_defense,
 )
 
+"""
+Run with : pytest -s 
+"""
+
 env = connect_four_v3.env()
 
 ### Test the row function ###
