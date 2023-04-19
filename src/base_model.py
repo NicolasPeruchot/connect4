@@ -178,6 +178,12 @@ class BaseQLearningModel:
             end = termination or truncation
             i += 1
             time.sleep(0.3)
+        if end == True:
+            winner = self.agents[i % 2]["name"]
+            if winner == "user":
+                print("Congratulations ! You won")
+            else:
+                print("Sorry, you lost against our agent.")
         self.env.close()
 
     def plot_training_stats(self):
