@@ -3,9 +3,9 @@ import time
 
 import matplotlib.pyplot as plt
 import numpy as np
+import random as rd
 
 from pettingzoo.classic import connect_four_v3
-
 
 
 class BaseQLearningModel:
@@ -87,15 +87,24 @@ class BaseQLearningModel:
     def initialize_stats(self):
         self.stats = {
             "winner": [],
-            "nb_moves_to_win": [], 
+            "nb_moves_to_win": [],
             "nb_direct_win_situations": [],
             "nb_direct_defense_situations": [],
             "nb_succesful_direct_defense_situations": [],
-            "exploration factor": []
-            }
+            "exploration factor": [],
+        }
         return None
 
-    def update_stats(self, winner, nb_moves_to_win, nb_direct_win_situations, nb_direct_defense_situations, nb_succesful_direct_defense_situations, game, n_training_game):
+    def update_stats(
+        self,
+        winner,
+        nb_moves_to_win,
+        nb_direct_win_situations,
+        nb_direct_defense_situations,
+        nb_succesful_direct_defense_situations,
+        game,
+        n_training_game,
+    ):
         if nb_moves_to_win != 6 * 7:
             self.stats["winner"].append(winner)
         else:
@@ -103,7 +112,9 @@ class BaseQLearningModel:
         self.stats["nb_moves_to_win"].append(nb_moves_to_win)
         self.stats["nb_direct_win_situations"].append(nb_direct_win_situations)
         self.stats["nb_direct_defense_situations"].append(nb_direct_defense_situations)
-        self.stats["nb_succesful_direct_defense_situations"].append(nb_succesful_direct_defense_situations)
+        self.stats["nb_succesful_direct_defense_situations"].append(
+            nb_succesful_direct_defense_situations
+        )
         self.stats["exploration factor"].append(self.get_exploration_factor(game, n_training_game))
 
     def play(self):
@@ -123,13 +134,67 @@ class BaseQLearningModel:
             time.sleep(0.3)
         self.env.close()
 
+    def play_random(self, random_user):
+        self.initialize_game(training=False)
+        self.reset_agents()
+        end = False
+        i = 0
+        while end is False:
+            current_agent = self.agents[i % 2]["name"]
+            self.env.agent_selection = current_agent
+            state = self.env.observe(current_agent)
+            if current_agent == random_user:
+                action = rd.randint(0, 6)
+            else:
+                action = self.get_action(state)
+            self.env.step(action)
+            state, reward, termination, truncation, info = self.env.last()
+            end = termination or truncation
+            i += 1
+            time.sleep(0.3)
+        self.env.close()
+
+    def play_user(self, user):
+        self.initialize_game(training=False)
+        self.reset_agents()
+        end = False
+        i = 0
+        while end is False:
+            current_agent = self.agents[i % 2]["name"]
+            self.env.agent_selection = current_agent
+            state = self.env.observe(current_agent)
+            if current_agent == user:
+                print("Choose a column to play in (between 0 and 6)")
+                action = int(input())
+                try:
+                    self.env.step(action)
+                except:
+                    print("Incorrect play, try again")
+                    action = int(input())
+            else:
+                action = self.get_action(state)
+                self.env.step(action)
+            state, reward, termination, truncation, info = self.env.last()
+            end = termination or truncation
+            i += 1
+            time.sleep(0.3)
+        if end == True:
+            winner = self.agents[i % 2]["name"]
+            if winner == "user":
+                print("Congratulations ! You won")
+            else:
+                print("Sorry, you lost against our agent.")
+        self.env.close()
+
     def plot_training_stats(self):
         # initial stats
         winner = np.array(self.stats["winner"])
         nb_moves_to_win = np.array(self.stats["nb_moves_to_win"])
         nb_direct_win_situations = np.array(self.stats["nb_direct_win_situations"])
         nb_direct_defense_situations = np.array(self.stats["nb_direct_defense_situations"])
-        nb_succesful_direct_defense_situations = np.array(self.stats["nb_succesful_direct_defense_situations"])
+        nb_succesful_direct_defense_situations = np.array(
+            self.stats["nb_succesful_direct_defense_situations"]
+        )
         explo_factor = np.array(self.stats["exploration factor"])
         mobile_mean_nb_moves_to_win = np.convolve(nb_moves_to_win, np.ones(10), "valid") / 10
         N = len(winner)
@@ -142,11 +207,15 @@ class BaseQLearningModel:
         nb_direct_defense_situations_smoothed = np.zeros(N)
         nb_succesful_direct_defense_situations_smoothed = np.zeros(N)
         for idx in range(N):
-            percentage_win_player_0[idx] = np.sum(player_0_is_winner[max(0, idx - 99): idx + 1]) / min(100, idx + 1)
-            percentage_direct_win[idx] =  min(100, idx + 1) / np.sum(nb_direct_win_situations[max(0, idx - 99): idx + 1])
-            percentage_direct_defense[idx] =  np.sum(nb_succesful_direct_defense_situations[max(0, idx - 99): idx + 1]) / np.sum(nb_direct_defense_situations[max(0, idx - 99): idx + 1])
-            nb_direct_defense_situations_smoothed[idx] = np.sum(nb_direct_defense_situations[max(0, idx - 99): idx + 1]) / min(100, idx + 1)
-            nb_succesful_direct_defense_situations_smoothed[idx] = np.sum(nb_succesful_direct_defense_situations_smoothed[max(0, idx - 99): idx + 1]) / min(100, idx + 1)
+            percentage_win_player_0[idx] = np.sum(
+                player_0_is_winner[max(0, idx - 99) : idx + 1]
+            ) / min(100, idx + 1)
+            percentage_direct_win[idx] = min(100, idx + 1) / np.sum(
+                nb_direct_win_situations[max(0, idx - 99) : idx + 1]
+            )
+            percentage_direct_defense[idx] = np.sum(
+                nb_succesful_direct_defense_situations[max(0, idx - 99) : idx + 1]
+            ) / np.sum(nb_direct_defense_situations[max(0, idx - 99) : idx + 1])
 
         # plot stats
         fig, axs = plt.subplots(7, 1, figsize=(10, 42))
