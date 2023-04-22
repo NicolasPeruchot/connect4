@@ -216,6 +216,12 @@ class BaseQLearningModel:
             percentage_direct_defense[idx] = np.sum(
                 nb_succesful_direct_defense_situations[max(0, idx - 99) : idx + 1]
             ) / np.sum(nb_direct_defense_situations[max(0, idx - 99) : idx + 1])
+            nb_direct_defense_situations_smoothed[idx] = np.sum(
+                nb_direct_defense_situations[max(0, idx - 99) : idx + 1]
+                ) / min(100, idx + 1)
+            nb_succesful_direct_defense_situations_smoothed[idx] = np.sum(
+                nb_succesful_direct_defense_situations[max(0, idx - 99) : idx + 1]
+                ) / min(100, idx + 1)
 
         # plot stats
         fig, axs = plt.subplots(7, 1, figsize=(10, 42))
