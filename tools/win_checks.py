@@ -104,4 +104,4 @@ def was_succesfull_direct_defense(state, last_action):
             sub_state[i, last_action] = np.array([0, 0])
 
     # If sub_state was a direct win situation, then this was a direct defense
-    return is_direct_win(sub_state)
+    return is_direct_win(sub_state) and not could_win_now
