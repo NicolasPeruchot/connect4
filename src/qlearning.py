@@ -2,7 +2,7 @@ import numpy as np
 
 from tqdm import tqdm
 
-from base_model import BaseQLearningModel
+from src.base_model import BaseQLearningModel
 from tools.win_checks import is_direct_win, is_direct_defense, was_succesfull_direct_defense
 
 
