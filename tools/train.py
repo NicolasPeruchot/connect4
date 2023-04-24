@@ -24,7 +24,7 @@ def main(save_dir, model_type):
     final_exploration_factor = 0.1
     discount_factor = 0.7
     learning_rate = 0.1
-    n_training_game = 1000
+    n_training_game = 100000
     batch_size = 64
     model_save_path = os.path.join(save_dir, model_type, 'model.pt')
 

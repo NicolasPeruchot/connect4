@@ -180,7 +180,7 @@ class BaseQLearningModel:
             time.sleep(0.3)
         if end == True:
             winner = self.agents[i % 2]["name"]
-            if winner == "user":
+            if winner == user:
                 print("Congratulations ! You won")
             else:
                 print("Sorry, you lost against our agent.")
